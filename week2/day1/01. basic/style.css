@@ -1,0 +1,14 @@
+
+body {
+    background-color: rgb(32, 182, 212);
+}
+
+span {
+    padding-left: 10px;
+    color: white;
+}
+
+div {
+    padding-top: 10px;
+    color: black;
+}

@@ -7,5 +7,9 @@ def index(request):
     context = {"questions": latest_question_list}
     return render(request, 'polls/index.html', context)
 
+def detail(request, question_id):
+    question = Question.objects.get(pk=question_id)
+    return render(request, 'polls/detail.html', {'question': question})
+
 def some_url(request):
     return HttpResponse("some URL")

@@ -14,6 +14,6 @@ class QuestionAdmin(admin.ModelAdmin):
     readonly_fields = ['pub_date']
     inlines = [ChoiceInline]
     list_filter = ['pub_date']
-    search_fields = ['question_text']
+    search_fields = ['question_text', 'choice__choice_text']
 
 admin.site.register(Question, QuestionAdmin)

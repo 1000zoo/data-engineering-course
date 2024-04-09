@@ -1,6 +1,7 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from .models import *
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 
 def index(request):
     latest_question_list = Question.objects.order_by("-pub_date")[:5]
@@ -8,8 +9,18 @@ def index(request):
     return render(request, 'polls/index.html', context)
 
 def detail(request, question_id):
-    question = Question.objects.get(pk=question_id)
+    question = get_object_or_404(Question, pk=question_id)
     return render(request, 'polls/detail.html', {'question': question})
+
+def vote(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        return render(request, 'polls/detail.html', {'question': question, 'error_message': "선택이 없습니다"})
+    selected_choice.votes += 1
+    selected_choice.save()
+    return HttpResponseRedirect(reverse('polls:index'))
 
 def some_url(request):
     return HttpResponse("some URL")

@@ -22,7 +22,8 @@ def vote(request, question_id):
     else:
         selected_choice.votes = F('votes') + 1
         selected_choice.save()
-        return HttpResponseRedirect(reverse('polls:index'))
+        return HttpResponseRedirect(reverse('polls:result', args={question_id,}))
 
-def some_url(request):
-    return HttpResponse("some URL")
+def result(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'polls/result.html', {'question': question})

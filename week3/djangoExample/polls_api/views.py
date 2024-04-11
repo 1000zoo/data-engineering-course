@@ -21,37 +21,14 @@ class QuestionList(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# @api_view(['GET', 'POST'])
-# def question_list(request):
-#     if request.method == 'GET':
-#         questions = Question.objects.all()
-#         serializer = QuestionSerializer(questions, many=True)
-#         return Response(serializer.data)
-    
-#     if request.method == 'POST':
-#         serializer = QuestionSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class QuestionDetail(APIView):
     def get(self, request, id):
-        pass
-    def put(self, request, id):
-        pass
-    def delete(self, request, id):
-        pass
-
-@api_view(["GET", "PUT", "DELETE"])
-def question_detail(request, id):
-    question = get_object_or_404(Question, pk=id)
-    if request.method == "GET":
+        question = get_object_or_404(Question, pk=id)
         serializer = QuestionSerializer(question)
         return Response(serializer.data)
     
-    if request.method == "PUT":
+    def put(self, request, id):
+        question = get_object_or_404(Question, pk=id)
         serializer = QuestionSerializer(question, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -59,6 +36,9 @@ def question_detail(request, id):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if request.method == "DELETE":
+    def delete(self, request, id):
+        question = get_object_or_404(Question, pk=id)
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+

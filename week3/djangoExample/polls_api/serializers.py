@@ -5,10 +5,14 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
 class ChoiceSerializer(serializers.ModelSerializer):
-    
+    votes_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Choice
-        fields = ["choice_text", "votes"]
+        fields = ["choice_text", "votes_count"]
+    
+    def get_votes_count(self, obj):
+        return obj.vote_set.count()
 
 class QuestionSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')

@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib import admin
+from django.contrib.auth.models import User
 
 class Question(models.Model):
     question_text = models.CharField(max_length=200, verbose_name="질문")
@@ -22,3 +23,13 @@ class Choice(models.Model):
 
     def __str__(self):
         return f'[{self.question.question_text}] {self.choice_text}'
+
+class Vote(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+    voter = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['question', 'voter'], name='unique_voter_for_questions')
+        ]

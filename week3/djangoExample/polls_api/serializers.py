@@ -4,6 +4,13 @@ from polls.models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
+class VoteSerializer(serializers.ModelSerializer):
+    voter = serializers.ReadOnlyField(source='voter.username')
+
+    class Meta:
+        model = Vote
+        fields = ['id', 'question', 'choice', 'voter']
+
 class ChoiceSerializer(serializers.ModelSerializer):
     votes_count = serializers.SerializerMethodField()
 

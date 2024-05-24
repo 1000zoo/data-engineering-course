@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.models import Variable
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+# from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.decorators import task
 
 from datetime import datetime
@@ -11,7 +11,7 @@ import logging
 
 
 def get_Redshift_connection(autocommit=True):
-    hook = PostgresHook(postgres_conn_id='redshift_dev_db')
+    hook = ... #PostgresHook(postgres_conn_id='redshift_dev_db')
     conn = hook.get_conn()
     conn.autocommit = autocommit
     return conn.cursor()
@@ -58,7 +58,7 @@ def load(schema, table, records):
             sql = f"INSERT INTO {schema}.name_gender VALUES ('{name}', '{gender}')"
             cur.execute(sql)
         cur.execute("COMMIT;")   # cur.execute("END;") 
-    except (Exception, psycopg2.DatabaseError) as error:
+    except (Exception) as error: # psycopg2.DatabaseError) as error:
         print(error)
         cur.execute("ROLLBACK;")   
     logging.info("load done")

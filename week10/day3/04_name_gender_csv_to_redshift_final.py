@@ -1,42 +1,44 @@
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.models import Variable
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.decorators import task
+
 from datetime import datetime
+from datetime import timedelta
+
 import requests
 import logging
-import psycopg2
-from ___key___ import *
 
-def get_Redshift_connection():
-    host = HOST
-    user = USER
-    password = PASSWORD
-    port = 5439
-    dbname = "dev"
-    conn = psycopg2.connect(f"dbname={dbname} user={user} host={host} password={password} port={port}")
-    conn.set_session(autocommit=True)
+
+def get_Redshift_connection(autocommit=True):
+    hook = PostgresHook(postgres_conn_id='redshift_dev_db')
+    conn = hook.get_conn()
+    conn.autocommit = autocommit
     return conn.cursor()
 
 
+@task
 def extract(url):
-    logging.info("Extract started")
+    logging.info(datetime.utcnow())
     f = requests.get(url)
-    logging.info("Extract done")
-    return (f.text)
+    return f.text
 
 
+@task
 def transform(text):
-    logging.info("Transform started")	
     lines = text.strip().split("\n")[1:] # 첫 번째 라인을 제외하고 처리
     records = []
     for l in lines:
-      (name, gender) = l.split(",") 
+      (name, gender) = l.split(",")
       records.append([name, gender])
     logging.info("Transform ended")
     return records
 
 
-def load(records):
-    logging.info("load started")
+@task
+def load(schema, table, records):
+    logging.info("load started")    
+    cur = get_Redshift_connection()   
     """
     records = [
       [ "Keeyong", "M" ],
@@ -44,9 +46,7 @@ def load(records):
       ...
     ]
     """
-    schema = SCHEMA
     # BEGIN과 END를 사용해서 SQL 결과를 트랜잭션으로 만들어주는 것이 좋음
-    cur = get_Redshift_connection()
     try:
         cur.execute("BEGIN;")
         cur.execute(f"DELETE FROM {schema}.name_gender;") 
@@ -64,22 +64,22 @@ def load(records):
     logging.info("load done")
 
 
-def etl():
-    link = S3LINK
-    data = extract(link)
-    lines = transform(data)
-    load(lines)
+with DAG(
+    dag_id='namegender_v5',
+    start_date=datetime(2022, 10, 6),  # 날짜가 미래인 경우 실행이 안됨
+    schedule='0 2 * * *',  # 적당히 조절
+    max_active_runs=1,
+    catchup=False,
+    default_args={
+        'retries': 1,
+        'retry_delay': timedelta(minutes=3),
+        # 'on_failure_callback': slack.on_failure_callback,
+    }
+) as dag:
 
+    url = Variable.get("csv_url")
+    schema = 'cjswldn99'   ## 자신의 스키마로 변경
+    table = 'name_gender'
 
-dag_second_assignment = DAG(
-	dag_id = 'name_gender',
-	catchup = False,
-	start_date = datetime(2023,4,6), # 날짜가 미래인 경우 실행이 안됨
-	schedule = '0 2 * * *'
-)  
-
-task = PythonOperator(
-	task_id = 'perform_etl',
-	python_callable = etl,
-	dag = dag_second_assignment
-)
+    lines = transform(extract(url))
+    load(schema, table, lines)

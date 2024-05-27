@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.decorators import task
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+# from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 from datetime import datetime
 
@@ -10,7 +10,7 @@ import logging
 
 
 def get_Redshift_connection(autocommit=True):
-    hook = PostgresHook(postgres_conn_id='redshift_dev_db')
+    hook = ... #PostgresHook(postgres_conn_id='redshift_dev_db')
     conn = hook.get_conn()
     conn.autocommit = autocommit
     return conn.cursor()

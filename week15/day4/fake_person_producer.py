@@ -39,14 +39,14 @@ def main():
         
     )
 
-    for _ in range(100):
+    for _ in range(50):
         person = Person(id=str(uuid.uuid4()), name=faker.name(), title=faker.job().title())
         people.append(person)
         producer.send(
             topic=topic_name,
             key=re.sub(r'\s+', '-', person.title.lower()).encode('utf-8'),
             value=person.model_dump_json().encode('utf-8'))
-
+        print(f"producer send ==> id: {person.id} / name: {person.name} / title: {person.title}")
     producer.flush()
 
 if __name__ == '__main__':
